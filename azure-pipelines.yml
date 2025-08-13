@@ -6,7 +6,7 @@ pool:
 
 variables:
   pythonVersion: '3.8'
-  webAppName: 'hssah-mlapp'        
+  webAppName: 'hssah-ml-1755027380'        
   azureServiceConnection: 'sc-azure-sub'       
 
 stages:
