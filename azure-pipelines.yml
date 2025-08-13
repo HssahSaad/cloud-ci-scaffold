@@ -1,0 +1,67 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  pythonVersion: '3.8'
+  webAppName: 'hssah-mlapp'        
+  azureServiceConnection: 'sc-azure-sub'       
+
+stages:
+- stage: Build
+  displayName: Build & Test
+  jobs:
+  - job: Build
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: 'Install dependencies'
+
+    - script: |
+        pip install pylint
+        pylint --disable=C,R app.py || true
+      displayName: 'Lint (non-blocking)'
+
+    - script: |
+        if [ -f tests/test_sample.py ]; then
+          pip install pytest
+          pytest -q
+        else
+          echo "No tests, skipping..."
+        fi
+      displayName: 'Run tests (if any)'
+
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)
+        zip -r $(Build.ArtifactStagingDirectory)/drop.zip .
+      displayName: 'Archive artifact'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: Deploy
+  displayName: Deploy to Azure Web App
+  dependsOn: Build
+  jobs:
+  - deployment: DeployWeb
+    environment: 'prod'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            displayName: 'Deploy to $(webAppName)'
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              appName: '$(webAppName)'
+              package: '$(Pipeline.Workspace)/drop/drop.zip'
