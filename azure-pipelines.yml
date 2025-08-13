@@ -7,7 +7,7 @@ pool:
 variables:
   pythonVersion: '3.8'
   webAppName: 'hssah-ml-1755027380'        
-  azureServiceConnection: 'sc-azure-sub'       
+  azureServiceConnection: 'sc-hssah-ml'       
 
 stages:
 - stage: Build
