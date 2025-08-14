@@ -102,7 +102,7 @@ Any update pushed to the GitHub repository is automatically tested and deployed.
 
 ## GitHub Actions Badge
 
-![GitHub Actions Status](https://github.com/<username>/<repo>/actions/workflows/<workflow_file>.yml/badge.svg)
+![GitHub Actions Status](https://github.com/<HssahSaad>/<cloud-ci-scaffold>/actions/workflows/<workflow_file>.yml/badge.svg)
 
 ---
 
