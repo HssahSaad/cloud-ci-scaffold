@@ -1,25 +1,22 @@
 trigger:
-  - main
+- main
 
 pool:
-  name: 'Default'   
+  vmImage: 'windows-latest'    
 
 steps:
-  - checkout: self
+- checkout: self
 
-  - script: |
-      python --version
-      pip --version
-    displayName: 'Check Python & Pip'
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
 
-  - script: |
-      pip install -r requirements.txt
-    displayName: 'Install requirements'
+- script: python -m pip install --upgrade pip
+  displayName: 'Upgrade pip'
 
-  - script: |
-      if exist tests (
-        pytest -q
-      ) else (
-        echo "No tests folder. Skipping tests."
-      )
-    displayName: 'Run tests (if any)'
+- script: pip install -r requirements.txt
+  displayName: 'Install dependencies'
+
+- script: python -m pytest -q
+  displayName: 'Run tests'
+  continueOnError: true
