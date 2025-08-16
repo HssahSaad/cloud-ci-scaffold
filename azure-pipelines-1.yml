@@ -1,0 +1,25 @@
+trigger:
+  - main
+
+pool:
+  name: 'Default'   
+
+steps:
+  - checkout: self
+
+  - script: |
+      python --version
+      pip --version
+    displayName: 'Check Python & Pip'
+
+  - script: |
+      pip install -r requirements.txt
+    displayName: 'Install requirements'
+
+  - script: |
+      if exist tests (
+        pytest -q
+      ) else (
+        echo "No tests folder. Skipping tests."
+      )
+    displayName: 'Run tests (if any)'
