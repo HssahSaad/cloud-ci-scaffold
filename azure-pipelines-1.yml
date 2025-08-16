@@ -2,17 +2,15 @@ trigger:
 - main
 
 pool:
-  vmImage: 'windows-latest'    
+  name: Default          
+  demands:
+  - Agent.Name -equals hssah-agent
 
 steps:
 - checkout: self
 
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.x'
-
-- script: python -m pip install --upgrade pip
-  displayName: 'Upgrade pip'
+- script: python --version
+  displayName: 'Check Python'
 
 - script: pip install -r requirements.txt
   displayName: 'Install dependencies'
