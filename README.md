@@ -104,9 +104,3 @@ It is deployed on **Azure App Service** with **Continuous Integration (CI)** thr
 ## GitHub Actions Badge
 
 ![Build Status](https://github.com/HssahSaad/cloud-ci-scaffold/actions/workflows/deploy-azure.yml/badge.svg)
-
----
-
-## Final Demo Video
-
-[Watch the Demo on YouTube](YouTube-link)
