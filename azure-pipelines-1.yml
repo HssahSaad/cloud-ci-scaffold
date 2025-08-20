@@ -2,7 +2,7 @@ trigger:
 - main
 
 pool:
-  name: Default          
+  name: 'MySelfHostedPool'          
   demands:
   - Agent.Name -equals hssah-agent
 
