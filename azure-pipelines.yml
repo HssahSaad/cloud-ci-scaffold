@@ -60,8 +60,7 @@ stages:
         deploy:
           steps:
           - task: AzureWebApp@1
-            displayName: 'Deploy to $(webAppName)'
             inputs:
-              azureSubscription: '$(azureServiceConnection)'
-              appName: '$(webAppName)'
-              package: '$(Pipeline.Workspace)/drop/drop.zip'
+              azureSubscription: 'sc-hssah-ml'
+              appName: 'hssah-ml-1755027380'
+              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
