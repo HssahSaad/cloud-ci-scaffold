@@ -1,20 +1,50 @@
-trigger:
-- main
+name: Build & Deploy to Azure Web App
 
-pool:
-  name: 'MySelfHostedPool'          
-  demands:
-  - Agent.Name -equals hssah-agent
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
 
-steps:
-- checkout: self
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
-- script: python --version
-  displayName: 'Check Python'
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
-- script: pip install -r requirements.txt
-  displayName: 'Install dependencies'
+    - name: Install dependencies into app folder
+      run: |
+        python -m pip install --upgrade pip
+        mkdir -p .python_packages/lib/site-packages
+        pip install -r requirements.txt -t .python_packages/lib/site-packages
 
-- script: python -m pytest -q
-  displayName: 'Run tests'
-  continueOnError: true
+    - name: Archive app with vendored deps
+      run: zip -r app.zip .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: drop
+        path: app.zip
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: drop
+        path: .
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: hssah-ml-1755027380   # ← لازم يطابق اسم الويب أب بالضبط
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: app.zip
