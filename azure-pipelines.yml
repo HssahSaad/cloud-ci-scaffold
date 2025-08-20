@@ -2,6 +2,7 @@ trigger:
 - main
 
 pool:
+  name: 'MySelfHostedPool'
   vmImage: 'ubuntu-latest'
 
 variables:
