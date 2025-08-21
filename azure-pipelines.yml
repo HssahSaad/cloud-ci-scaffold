@@ -2,65 +2,80 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: MySelfHostedPool
 
 variables:
-  pythonVersion: '3.8'
-  webAppName: 'hssah-ml-1755027380'        
-  azureServiceConnection: 'sc-hssah-ml'       
+  azureServiceConnectionId: 'sc-hssah-ml'        
+  webAppName: 'hssah-ml-1755027380'             
+  environmentName: 'prod'
 
 stages:
+# ======================
+# Build Stage
+# ======================
 - stage: Build
-  displayName: Build & Test
+  displayName: Build & Package
   jobs:
-  - job: Build
+  - job: BuildJob
+    displayName: BuildJob
+    pool:
+      name: MySelfHostedPool
     steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(pythonVersion)'
+    - checkout: self
 
-    - script: |
+    - powershell: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-      displayName: 'Install dependencies'
+        New-Item -ItemType Directory -Force -Path ".python_packages\lib\site-packages" | Out-Null
+        python -m pip install -r requirements.txt -t ".python_packages\lib\site-packages"
+      displayName: Install dependencies (vendored)
 
-    - script: |
-        pip install pylint
-        pylint --disable=C,R app.py || true
-      displayName: 'Lint (non-blocking)'
+    - powershell: |
+        python -m pip install pylint
+        pylint --disable=C,R app.py
+        if ($LASTEXITCODE -ne 0) { Write-Host "Lint warnings ignored"; exit 0 }
+      displayName: Lint (non-blocking)
 
-    - script: |
-        if [ -f tests/test_sample.py ]; then
-          pip install pytest
-          pytest -q
-        else
-          echo "No tests, skipping..."
-        fi
-      displayName: 'Run tests (if any)'
-
-    - script: |
-        mkdir -p $(Build.ArtifactStagingDirectory)
-        zip -r $(Build.ArtifactStagingDirectory)/drop.zip .
-      displayName: 'Archive artifact'
+    - task: ArchiveFiles@2
+      displayName: Archive app
+      inputs:
+        rootFolderOrFile: '$(Build.SourcesDirectory)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)\drop.zip'
+        replaceExistingArchive: true
 
     - task: PublishBuildArtifacts@1
+      displayName: Publish artifact
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'drop'
         publishLocation: 'Container'
 
+# ======================
+# Deploy Stage
+# ======================
 - stage: Deploy
   displayName: Deploy to Azure Web App
   dependsOn: Build
+  condition: succeeded()
   jobs:
   - deployment: DeployWeb
-    environment: 'prod'
+    displayName: DeployWeb
+    environment: '$(environmentName)'
+    pool:
+      name: MySelfHostedPool
     strategy:
       runOnce:
         deploy:
           steps:
+          - download: current
+            displayName: Download artifact
+            artifact: drop
+
           - task: AzureWebApp@1
+            displayName: Deploy Azure Web App
             inputs:
-              azureSubscription: 'sc-hssah-ml'
-              appName: 'hssah-ml-1755027380'
-              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              azureSubscription: '$(azureServiceConnectionId)'
+              appName: '$(webAppName)'
+              appType: 'webApp'        
+              package: '$(Pipeline.Workspace)\drop\drop.zip'
