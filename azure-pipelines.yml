@@ -2,74 +2,63 @@ trigger:
 - main
 
 pool:
-  name: MySelfHostedPool
+  name: MySelfHostedPool   # <-- اسم الـPool الصحيح
 
 variables:
-  azureServiceConnectionId: 'sc-hssah-ml'        
-  webAppName: 'hssah-ml-1755027380'             
+  azureServiceConnectionId: 'sc-hssah-ml'
+  webAppName: 'hssah-ml-1755027380'
   environmentName: 'test'
+  projectRoot: $(System.DefaultWorkingDirectory)
 
 stages:
 - stage: Build
-  displayName: Build & Package
+  displayName: Build stage
   jobs:
   - job: BuildJob
-    displayName: BuildJob
+    # لا تغيّر الـpool هنا، خليه يرث من أعلى أو اكتب نفس الاسم
     pool:
       name: MySelfHostedPool
     steps:
-    - checkout: self
+    - script: |
+        python3 -m pip install --user -r requirements.txt
+      workingDirectory: $(projectRoot)
+      displayName: 'Install dependencies'
 
-    - powershell: |
-        python -m pip install --upgrade pip
-        New-Item -ItemType Directory -Force -Path ".python_packages\lib\site-packages" | Out-Null
-        python -m pip install -r requirements.txt -t ".python_packages\lib\site-packages"
-      displayName: Install dependencies (vendored)
-
-    - powershell: |
-        python -m pip install pylint
-        pylint --disable=C,R app.py
-        if ($LASTEXITCODE -ne 0) { Write-Host "Lint warnings ignored"; exit 0 }
-      displayName: Lint (non-blocking)
+    - script: |
+        export PATH=$HOME/.local/bin:$PATH
+        make lint
+      workingDirectory: $(projectRoot)
+      displayName: 'Run lint tests'
 
     - task: ArchiveFiles@2
-      displayName: Archive app
+      displayName: 'Archive files'
       inputs:
-        rootFolderOrFile: '$(Build.SourcesDirectory)'
+        rootFolderOrFile: '$(projectRoot)'
         includeRootFolder: false
-        archiveType: 'zip'
-        archiveFile: '$(Build.ArtifactStagingDirectory)\drop.zip'
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
         replaceExistingArchive: true
 
-    - task: PublishBuildArtifacts@1
-      displayName: Publish artifact
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
+    - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+      displayName: 'Upload package'
+      artifact: drop
 
 - stage: Deploy
-  displayName: Deploy to Azure Web App
+  displayName: Deploy Web App
   dependsOn: Build
   condition: succeeded()
   jobs:
-  - deployment: DeployWeb
-    displayName: DeployWeb
-    environment: '$(environmentName)'
+  - deployment: DeploymentJob
     pool:
       name: MySelfHostedPool
+    environment: $(environmentName)
     strategy:
       runOnce:
         deploy:
           steps:
-          - download: current
-            displayName: Download artifact
-            artifact: drop
-
           - task: AzureWebApp@1
-            displayName: Deploy Azure Web App
+            displayName: 'Deploy Azure Web App'
             inputs:
-              azureSubscription: '$(azureServiceConnectionId)'
-              appName: '$(webAppName)'
-              appType: 'webApp'        
-              package: '$(Pipeline.Workspace)\drop\drop.zip'
+              azureSubscription: $(azureServiceConnectionId)
+              appName: $(webAppName)
+              package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
