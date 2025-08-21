@@ -46,12 +46,7 @@ It is deployed on **Azure App Service** with **Continuous Integration (CI)** thr
 
 * **Platform:** Azure App Service
 * **Continuous Integration:** Implemented via **GitHub Actions** (tests + linting run automatically on every push).
-* **Continuous Delivery:** An Azure Pipeline was configured, but due to the error *“No hosted parallelism has been purchased or granted”*, the pipeline could not complete.
-
-  * Attempts were made using a **self-hosted agent**, but the deployment step was not finalized.
-  <img width="812" height="392" alt="image" src="https://github.com/user-attachments/assets/28758869-3b6c-4af8-a0f6-1eb2b6e7ddd0" />
-
-
+* **Continuous Delivery:** 
 ---
 
 ## Testing the Prediction Script
@@ -85,19 +80,10 @@ It is deployed on **Azure App Service** with **Continuous Integration (CI)** thr
 
 2. **Prediction command output** <img width="958" height="493" alt="image" src="https://github.com/user-attachments/assets/48157589-0ade-42ab-b92e-da84a593b7e7" />
 
-3. **Azure Pipelines setup attempt (documented error)** <img width="953" height="398" alt="image" src="https://github.com/user-attachments/assets/ed09d4dc-c292-42f4-b90a-8ae1402b7e73" />
+3. **Azure Pipelines setup** <img width="699" height="137" alt="pipline" src="https://github.com/user-attachments/assets/4d1ec195-8bec-4dd9-8ed6-3965f56baa72" />
+
 
 4. **Tests passing after running `make all`** <img width="956" height="488" alt="Make All run " src="https://github.com/user-attachments/assets/74236246-21d9-4c6b-be40-8f3890cb2be4" />
-
----
-
-## Future Improvements
-
-* Fix Azure Pipeline issue with hosted parallelism to complete full CI/CD.
-* Add authentication for the web app.
-* Deploy using Docker containers for more flexibility.
-* Improve ML model accuracy with more data.
-* Add input validation and error handling.
 
 ---
 
