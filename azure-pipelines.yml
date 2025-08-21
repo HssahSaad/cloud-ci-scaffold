@@ -7,7 +7,7 @@ pool:
 variables:
   azureServiceConnectionId: 'sc-hssah-ml'        
   webAppName: 'hssah-ml-1755027380'             
-  environmentName: 'prod'
+  environmentName: 'test'
 
 stages:
 - stage: Build
