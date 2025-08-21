@@ -10,9 +10,6 @@ variables:
   environmentName: 'prod'
 
 stages:
-# ======================
-# Build Stage
-# ======================
 - stage: Build
   displayName: Build & Package
   jobs:
@@ -51,9 +48,6 @@ stages:
         ArtifactName: 'drop'
         publishLocation: 'Container'
 
-# ======================
-# Deploy Stage
-# ======================
 - stage: Deploy
   displayName: Deploy to Azure Web App
   dependsOn: Build
