@@ -70,8 +70,11 @@ It is deployed on **Azure App Service** with **Continuous Integration (CI)** thr
 ## Project Plan & Estimates
 
 * **Trello Board:** \[[Click here](https://trello.com/invite/b/689a136c34656571fde845fd/ATTIe8f6b1b34a5bd94d14f99d3ae0102ee5D152062E/website-development-project-plan)]
-* **Project Plan Spreadsheet:** \[[Click here](https://docs.google.com/spreadsheets/d/1oMJ55Bxuj8_HigrxktKnxtXbc5A3XjuH-ogmMRxz7ww/edit?usp=sharing)]
+* **Project Plan Spreadsheet:** [\[[Click here](https://docs.google.com/spreadsheets/d/1oMJ55Bxuj8_HigrxktKnxtXbc5A3XjuH-ogmMRxz7ww/edit?usp=sharing)]
+---
+## future improvements
 
+In the future, this project could be improved by integrating automated model retraining using Azure ML pipelines, adding monitoring dashboards for predictions, and implementing authentication for secure API access.
 ---
 
 ## Screenshots
